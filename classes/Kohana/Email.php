@@ -16,6 +16,91 @@ abstract class Kohana_Email {
 	// holds the default config group	
 	const DEFAULT_CONFIG_GROUP = 'default';
 
+    /**
+     * Loads Swift Mailer once
+     * 
+     * @static
+     * @access public
+     * @return void
+     */
+    public static function load_swift_mailer()
+    {
+        if ( ! defined('SWIFT_REQUIRED_LOADED'))
+        {
+            include Kohana::find_file('vendor/lib','swift_required');
+        }
+    }
+
+	/**
+	 * The factory method creates a new Email instance, based on a configuration array or
+	 * string that holds the name of a config group in the config file.
+	 *
+	 * @param $config mixed array or string holding the config group name (default if none provided)
+	 * @access public
+	 * @static
+	 * @return Email instance
+	 */
+	public static function factory($config = NULL)
+	{
+        self::load_swift_mailer();
+
+		if ($config === NULL)
+		{
+			$config_group = self::DEFAULT_CONFIG_GROUP;
+		}
+		elseif (!is_array($config))
+		{
+			$config_group = $config;
+		}
+
+		$config = isset($config_group) ? Kohana::$config->load('swift')->get($config_group) : $config;
+
+		return new Email($config);
+	}
+
+	/**
+	 * Creates and populates (optionally) a Swift_Message instance. It returns a
+	 * Swift_Message instance, in order to allow chaining (in order to use the
+	 * original methods of Swift_Message).
+	 *
+	 * @param $subject string (optional) the message's subject
+	 * @param $from string (optional) the from header
+	 * @param $to string (optional) the to header
+	 * @param $body string (optional) the email body
+	 * @access public
+	 * @return Swift_Message instance
+	 * @static
+	 *
+	 */
+	public static function message($subject = NULL, $from = NULL, $to = NULL, $body = NULL)
+	{		
+        self::load_swift_mailer();
+
+		$message = Swift_Message::newInstance();
+
+		if ($subject !== NULL)
+		{
+			$message->setSubject($subject);
+		}
+
+		if ($from !== NULL)
+		{
+			$message->setSubject($from);
+		}
+
+		if ($to !== NULL)
+		{
+			$message->setTo($to);
+		}
+
+		if ($body !== NULL)
+		{
+			$message->setBody($body);
+		}
+
+		return $message;
+	}
+
 	// holds the transport instance
 	protected $transport;
 
@@ -34,6 +119,8 @@ abstract class Kohana_Email {
      */
 	public function __construct($config)
 	{			
+        self::load_swift_mailer();
+
 		$this->set_transport($config);
 		$this->mailer = Swift_Mailer::newInstance($this->transport);
 	}
@@ -74,72 +161,6 @@ abstract class Kohana_Email {
 				}
 				break;				
 		}	
-	}
-
-	/**
-	 * The factory method creates a new Email instance, based on a configuration array or
-	 * string that holds the name of a config group in the config file.
-	 *
-	 * @param $config mixed array or string holding the config group name (default if none provided)
-	 * @access public
-	 * @static
-	 * @return Email instance
-	 */
-	public static function factory($config = NULL)
-	{
-		if ($config === NULL)
-		{
-			$config_group = self::DEFAULT_CONFIG_GROUP;
-		}
-		elseif (!is_array($config))
-		{
-			$config_group = $config;
-		}
-
-		$config = isset($config_group) ? Kohana::$config->load('swift')->get($config_group) : $config;
-
-		return new Email($config);
-	}
-
-	/**
-	 * Creates and populates (optionally) a Swift_Message instance. It returns a
-	 * Swift_Message instance, in order to allow chaining (in order to use the
-	 * original methods of Swift_Message).
-	 *
-	 * @param $subject string (optional) the message's subject
-	 * @param $from string (optional) the from header
-	 * @param $to string (optional) the to header
-	 * @param $body string (optional) the email body
-	 * @access public
-	 * @return Swift_Message instance
-	 * @static
-	 *
-	 */
-	public static function message($subject = NULL, $from = NULL, $to = NULL, $body = NULL)
-	{		
-		$message = Swift_Message::newInstance();
-
-		if ($subject !== NULL)
-		{
-			$message->setSubject($subject);
-		}
-
-		if ($from !== NULL)
-		{
-			$message->setSubject($from);
-		}
-
-		if ($to !== NULL)
-		{
-			$message->setTo($to);
-		}
-
-		if ($body !== NULL)
-		{
-			$message->setBody($body);
-		}
-
-		return $message;
 	}
 
 	/**
