@@ -25,6 +25,21 @@ abstract class Kohana_Email {
 	// holds the Swift_Message instance
 	protected $message;
 
+    /**
+     * Loads Swift Mailer once
+     * 
+     * @static
+     * @access public
+     * @return void
+     */
+    public static function load_swift_mailer()
+    {
+        if ( ! defined('SWIFT_REQUIRED_LOADED'))
+        {
+            include Kohana::find_file('vendor/lib','swift_required');
+        }
+    }
+
 	/**
      * The constructor accepts a configuration (either a config array or a string that
      * loads configuration from a config group). It sets the $transport and $mailer properties.
@@ -34,6 +49,8 @@ abstract class Kohana_Email {
      */
 	public function __construct($config)
 	{			
+        self::load_swift_mailer();
+
 		$this->set_transport($config);
 		$this->mailer = Swift_Mailer::newInstance($this->transport);
 	}
@@ -87,6 +104,8 @@ abstract class Kohana_Email {
 	 */
 	public static function factory($config = NULL)
 	{
+        self::load_swift_mailer();
+
 		if ($config === NULL)
 		{
 			$config_group = self::DEFAULT_CONFIG_GROUP;
@@ -117,6 +136,8 @@ abstract class Kohana_Email {
 	 */
 	public static function message($subject = NULL, $from = NULL, $to = NULL, $body = NULL)
 	{		
+        self::load_swift_mailer();
+
 		$message = Swift_Message::newInstance();
 
 		if ($subject !== NULL)
