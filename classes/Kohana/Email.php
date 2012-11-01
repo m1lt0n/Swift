@@ -16,15 +16,6 @@ abstract class Kohana_Email {
 	// holds the default config group	
 	const DEFAULT_CONFIG_GROUP = 'default';
 
-	// holds the transport instance
-	protected $transport;
-
-	// holds the Swift_Mailer instance
-	protected $mailer;
-
-	// holds the Swift_Message instance
-	protected $message;
-
     /**
      * Loads Swift Mailer once
      * 
@@ -39,59 +30,6 @@ abstract class Kohana_Email {
             include Kohana::find_file('vendor/lib','swift_required');
         }
     }
-
-	/**
-     * The constructor accepts a configuration (either a config array or a string that
-     * loads configuration from a config group). It sets the $transport and $mailer properties.
-     *
-     * @param $config mixed array or string (string holds the config group name)
-     * @access public
-     */
-	public function __construct($config)
-	{			
-        self::load_swift_mailer();
-
-		$this->set_transport($config);
-		$this->mailer = Swift_Mailer::newInstance($this->transport);
-	}
-
-	/**
-	 * Sets the transport instance.
-	 *
-	 * @param $config mixed array or string (that holds the config group name)
-	 * @access public
-	 * @return void 
-	 */
-	public function set_transport($config)
-	{
-		if (!isset($config['transport']))
-		{
-			$config['transport'] = array('type' => self::TRANSPORT_MAIL);
-		}
-
-		switch ($config['transport']['type'])
-		{
-			case self::TRANSPORT_SENDMAIL:
-				$this->transport = isset($config['transport']['options']['command']) 
-					                     ? Swift_SendmailTransport::newInstance($config['transport']['options']['command'])
-					                     : Swift_SendmailTransport::newInstance();				
-				break;
-			case self::TRANSPORT_MAIL:
-				$this->transport = isset($config['transport']['options']['extra_params']) 
-					                     ? Swift_MailTransport::newInstance($config['transport']['options']['extra_params'])
-					                     : Swift_MailTransport::newInstance();
-				break;
-			case self::TRANSPORT_SMTP:
-			default:
-				$this->transport = Swift_SmtpTransport::newInstance();
-				foreach ($config['transport']['options'] as $key => $value)
-				{
-					$func = 'set' . ucfirst($key);
-					$this->transport->$func($value);
-				}
-				break;				
-		}	
-	}
 
 	/**
 	 * The factory method creates a new Email instance, based on a configuration array or
@@ -161,6 +99,68 @@ abstract class Kohana_Email {
 		}
 
 		return $message;
+	}
+
+	// holds the transport instance
+	protected $transport;
+
+	// holds the Swift_Mailer instance
+	protected $mailer;
+
+	// holds the Swift_Message instance
+	protected $message;
+
+	/**
+     * The constructor accepts a configuration (either a config array or a string that
+     * loads configuration from a config group). It sets the $transport and $mailer properties.
+     *
+     * @param $config mixed array or string (string holds the config group name)
+     * @access public
+     */
+	public function __construct($config)
+	{			
+        self::load_swift_mailer();
+
+		$this->set_transport($config);
+		$this->mailer = Swift_Mailer::newInstance($this->transport);
+	}
+
+	/**
+	 * Sets the transport instance.
+	 *
+	 * @param $config mixed array or string (that holds the config group name)
+	 * @access public
+	 * @return void 
+	 */
+	public function set_transport($config)
+	{
+		if (!isset($config['transport']))
+		{
+			$config['transport'] = array('type' => self::TRANSPORT_MAIL);
+		}
+
+		switch ($config['transport']['type'])
+		{
+			case self::TRANSPORT_SENDMAIL:
+				$this->transport = isset($config['transport']['options']['command']) 
+					                     ? Swift_SendmailTransport::newInstance($config['transport']['options']['command'])
+					                     : Swift_SendmailTransport::newInstance();				
+				break;
+			case self::TRANSPORT_MAIL:
+				$this->transport = isset($config['transport']['options']['extra_params']) 
+					                     ? Swift_MailTransport::newInstance($config['transport']['options']['extra_params'])
+					                     : Swift_MailTransport::newInstance();
+				break;
+			case self::TRANSPORT_SMTP:
+			default:
+				$this->transport = Swift_SmtpTransport::newInstance();
+				foreach ($config['transport']['options'] as $key => $value)
+				{
+					$func = 'set' . ucfirst($key);
+					$this->transport->$func($value);
+				}
+				break;				
+		}	
 	}
 
 	/**
