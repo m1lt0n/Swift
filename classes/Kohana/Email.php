@@ -147,11 +147,11 @@ abstract class Kohana_Email {
 	 *
 	 * @param $message Swift_Message the message
 	 * @access public
-	 * @return void
+	 * @return integer number of e-mails sent
 	 */
-	public function send(Swift_Message $message)
+	public function send(Swift_Message $message, &$failures = NULL)
 	{
-		$this->mailer->send($message);
+		return $this->mailer->send($message, $failures);
 	}
 
 }
