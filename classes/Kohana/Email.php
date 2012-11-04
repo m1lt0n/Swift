@@ -126,7 +126,7 @@ abstract class Kohana_Email {
 
 		if ($from !== NULL)
 		{
-			$message->setSubject($from);
+			$message->setFrom($from);
 		}
 
 		if ($to !== NULL)
